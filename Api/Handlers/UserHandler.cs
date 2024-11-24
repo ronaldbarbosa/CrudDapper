@@ -2,12 +2,14 @@ using System.Data.SqlClient;
 using Api.DTOs;
 using Api.Models;
 using Dapper;
+using Security.Interfaces;
 
 namespace Api.Handlers;
 
-public class UserHandler(IConfiguration configuration) : IUserHandler
+public class UserHandler(IConfiguration configuration, ISecurityHandler securityHandler) : IUserHandler
 {
     private readonly IConfiguration _configuration = configuration;
+    private readonly ISecurityHandler _securityHandler = securityHandler;
     
     public async Task<Response<List<UserDTO>>> GetAllUsers()
     {
@@ -62,6 +64,7 @@ public class UserHandler(IConfiguration configuration) : IUserHandler
     public async Task<Response<UserDTO>> CreateUser(CreateUserDTO user)
     {
         var response = new Response<UserDTO>();
+        user.Password = _securityHandler.HashPassword(user.Password);
 
         using (var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
         {
@@ -128,6 +131,29 @@ public class UserHandler(IConfiguration configuration) : IUserHandler
             
             response.Message = "User deleted";
             response.Status = true;
+        }
+        
+        return response;
+    }
+
+    public async Task<Response<string>> GetUserPassword(int id)
+    {
+        var response = new Response<string>();
+
+        using (var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+        {
+            var userPassword = await conn.ExecuteScalarAsync<string>("SELECT Password FROM CrudDapper.dbo.Users WHERE ID = @Id", new { Id = id });
+
+            if (userPassword is null)
+            {
+                response.Message = "No user found";
+                response.Status = false;
+                
+                return response;
+            }
+            
+            response.Data = userPassword;
+            response.Message = "User`s password retrieved";
         }
         
         return response;

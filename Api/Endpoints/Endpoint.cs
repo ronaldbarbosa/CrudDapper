@@ -1,4 +1,5 @@
 using Api.Common.Api;
+using Api.Endpoints.Security;
 using Api.Endpoints.Users;
 
 namespace Api.Endpoints;
@@ -21,6 +22,10 @@ public static class Endpoint
             .MapEndpoint<CreateUserEndpoint>()
             .MapEndpoint<UpdateUserEndpoint>()
             .MapEndpoint<DeleteUserEndpoint>();
+
+        endpoints.MapGroup("security")
+            .WithTags("Security")
+            .MapEndpoint<VerifyPasswordEndpoint>();
     }
     
     private static IEndpointRouteBuilder MapEndpoint<TEndpoint>(this IEndpointRouteBuilder endpoints)

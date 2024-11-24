@@ -10,4 +10,5 @@ public interface IUserHandler
     Task<Response<UserDTO>> CreateUser(CreateUserDTO user);
     Task<Response<UserDTO>> UpdateUser(UpdateUserDTO user);
     Task<Response<UserDTO>> DeleteUser(int id);
+    Task<Response<string>> GetUserPassword(int id);
 }
